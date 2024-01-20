@@ -28,7 +28,7 @@ func _ready():
 		push_error("Parent of a Push Body Marker Sprite should be or inherit from a PushBody2D.")
 	top_level = true
 	parent.Moved.connect(_move)
-	parent.SentPushes.connect(_pushed)
+	parent.PushedSomething.connect(_pushed)
 	parent.FailedMovement.connect(_fail)
 	
 
@@ -53,9 +53,9 @@ func _fail(offset: Vector2i):
 		self_modulate = marker_highlight_failure_color
 		global_position = parent.get_center_of_tile(parent.tile_position + offset)
 		active = marker_duration
-func _pushed(to: Array[PushBody2D], location: Vector2i):
+func _pushed(other: PushBody2D):
 	if marker_highlight_pushes:
 		time_since_move = 0.0
 		self_modulate = marker_highlight_push_color
-		global_position = parent.get_center_of_tile(location)
+		global_position = parent.get_center_of_tile(other.tile_position)
 		active = marker_duration

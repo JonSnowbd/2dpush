@@ -3,6 +3,8 @@
 extends CharacterBody2D
 class_name PushBody2D
 
+## Called when this entity enters or leaves a tilemap.
+## Since this includes leaving, `new_tilemap` can be null.
 signal TilemapChanged(new_tilemap: TileMap)
 ## Called when the tile_position changes.
 signal Moved(old_tile: Vector2i, new_tile: Vector2i)
@@ -12,7 +14,10 @@ signal FailedMovement(attempted_offset: Vector2i)
 signal AgentCaughtUp
 ## Called when a push body attempted to push into this one.
 signal ReceivedPush(from: PushBody2D)
-## Called and gives a list of bodies when attempting to push into a new space.
+## Different from sent pushes, which collects all the things you could push
+## for you to do with as you please, this streams all potentially sent pushes.
+signal PushedSomething(other: PushBody2D)
+## Called and gives a list of bodies when attempted to push into a new space.
 signal SentPushes(to: Array[PushBody2D], on: Vector2i)
 ## Called when a limitation is applied to the push body
 signal Limited(new_limitations: Rect2i)
@@ -249,6 +254,7 @@ func move_tile(offset: Vector2i, check_validity: bool = true, send_pushes: bool 
 						continue
 					if send_pushes:
 						node.receiving_push(self)
+						PushedSomething.emit(node)
 						failed = false
 					if receive_pushes:
 						relevant_nodes.append(node as PushBody2D)
@@ -348,6 +354,7 @@ func show_bar(name: String, completion: float, linger_duration: float = 2.0, col
 	_bar_color = color
 	_bar_fade = fade_duration
 	queue_redraw()
+
 func is_bar_showing() -> bool:
 	return _bar_duration > 0.0
 
